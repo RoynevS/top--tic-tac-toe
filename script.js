@@ -59,7 +59,7 @@ function gameController(player1name, player2name) {
 
 
   const printWinner = () => {
-    if (checkDraw()) {
+    if (checkDraw() && !(checkColumn() || checkDiagonal() || checkRow())) {
       return "Draw";
     } else {
       return `Congratulations ${getActivePlayer().getName()}, you win!`;
@@ -70,12 +70,8 @@ function gameController(player1name, player2name) {
   const playRound = (row, column) => {
     if (!board.checkCellEmpty(row, column)) return;
 
-    console.log(
-      `Placing ${getActivePlayer().getName()} marker into row ${row} and column ${column}...`
-    );
     board.setMarks(row, column, getActivePlayer());
 
-    
     if (!gameEnd()) switchPlayerTurn();
   };
 
@@ -143,7 +139,7 @@ function gameController(player1name, player2name) {
 }
 
 
-function screenController() {
+function gameScreen() {
   const playerActiveDiv = document.querySelector(".active-player");
   const boardDiv = document.querySelector(".board");
   const endScreenModal = document.querySelector(".end-screen");
@@ -152,70 +148,71 @@ function screenController() {
   const startScreenModal = document.querySelector(".start-screen");
   const namePlayer1 = document.querySelector("#player-1");
   const namePlayer2 = document.querySelector("#player-2");
-  const startBtn = document.querySelector(".start-game--btn");
   
-  
-  startScreenModal.showModal();
+  const resetBtn = document.querySelector(".reset-game--btn");
 
-  startBtn.addEventListener("click", function() {
-    startScreenModal.close();
 
-    const game = gameController(namePlayer1.value, namePlayer2.value);
+  startScreenModal.close();
 
-    const updateScreen = () => {
-      boardDiv.textContent = "";
+  const game = gameController(namePlayer1.value, namePlayer2.value);
 
-      const board = game.getBoard();
-      const activePlayer = game.getActivePlayer();
-      console.log(activePlayer.getName())
+  const updateScreen = () => {
+    boardDiv.textContent = "";
 
-      playerActiveDiv.textContent = `${activePlayer.getName()}'s turn...`;
+    const board = game.getBoard();
+    const activePlayer = game.getActivePlayer();
 
-      let counter = 0;
-      board.forEach(row => {
-        row.forEach((cell, index) => {
-          const cellButton = document.createElement("button");
-          cellButton.classList.add("cell");
-          cellButton.dataset.column = index;
-          cellButton.dataset.row = counter;
-          cellButton.textContent = cell;
-          boardDiv.appendChild(cellButton);
-        })
-        counter++
+    playerActiveDiv.textContent = `${activePlayer.getName()}'s turn...`;
+
+    let counter = 0;
+    board.forEach(row => {
+      row.forEach((cell, index) => {
+        const cellButton = document.createElement("button");
+        cellButton.classList.add("cell");
+        cellButton.dataset.column = index;
+        cellButton.dataset.row = counter;
+        cellButton.textContent = cell;
+        boardDiv.appendChild(cellButton);
       })
-    };
+      counter++
+    })
+  };
 
-    function clickHandlerBoard(e) {
-      const selectedColumn = e.target.dataset.column;
-      const selectedRow = e.target.dataset.row;
+  function clickHandlerBoard(e) {
+    const selectedColumn = e.target.dataset.column;
+    const selectedRow = e.target.dataset.row;
 
-      if (!selectedColumn || !selectedRow) return;
+    if (!selectedColumn || !selectedRow) return;
 
-      game.playRound(selectedRow, selectedColumn);
-      if (game.gameEnd()) openEndScreenModal();
-
-      updateScreen();
-    }
-
-
-    const openEndScreenModal = () => {
-      winnerDiv.textContent = game.printWinner();
-      endScreenModal.showModal();
-    };
-    
-    
-    function restartGame() {
-      game.resetBoard();
-      endScreenModal.close();
-      updateScreen();
-    }
-    
-    
-    boardDiv.addEventListener("click", clickHandlerBoard);
-    playAgainBtn.addEventListener("click", restartGame);
+    game.playRound(selectedRow, selectedColumn);
+    if (game.gameEnd()) openEndScreenModal();
 
     updateScreen();
-    })
+  }
+
+
+  const openEndScreenModal = () => {
+    winnerDiv.textContent = game.printWinner();
+    endScreenModal.showModal();
+  };
+  
+  
+  function restartGame() {
+    game.resetBoard();
+    endScreenModal.close();
+    updateScreen();
+  }
+  
+  
+  boardDiv.addEventListener("click", clickHandlerBoard);
+  playAgainBtn.addEventListener("click", restartGame);
+  resetBtn.addEventListener("click", restartGame);
+
+  updateScreen();
 }
 
-screenController();
+
+const screenController = (function() {
+  const startBtn = document.querySelector(".start-game--btn");
+  startBtn.addEventListener("click", gameScreen)
+})();
