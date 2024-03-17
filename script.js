@@ -6,7 +6,7 @@ function createPlayer(name, marker) {
 }
 
 
-function gameboard() {
+const gameboard = (function() {
   const board = [
     [" ", " ", " "],
     [" ", " ", " "],
@@ -26,12 +26,12 @@ function gameboard() {
   };
   
   return { getBoard, setMarks, printBoard };
-}
+})();
 
-function gameController() {
+const gameController = (function() {
   const players = [createPlayer("Player 1", "X"), createPlayer("Player 2", "O")];
 
-  const board = gameboard();
+  const board = gameboard;
 
   let activePlayer = players[0];
 
@@ -66,11 +66,12 @@ function gameController() {
     );
     board.setMarks(row, column, getActivePlayer());
 
-    printNewRound();
-
+    
     if (!gameEnd()) {
       switchPlayerTurn();
     }
+    
+    printNewRound();
 
   };
 
@@ -135,6 +136,6 @@ function gameController() {
   }
 
   return { playRound, getActivePlayer };
-}
+})();
 
-const game = gameController();
+const game = gameController;
