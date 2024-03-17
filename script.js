@@ -35,37 +35,52 @@ function gameController() {
 
   let activePlayer = players[0];
 
+
   const switchPlayerTurn = () => {
     activePlayer = activePlayer === players[0] ? players[1] : players[0];
   };
 
+
   const getActivePlayer = () => activePlayer;
+
 
   const printNewRound = () => {
     board.printBoard()
-    console.log(`${getActivePlayer().getName()}'s turn`)
+
+    if (!gameEnd()) {
+      console.log(`${getActivePlayer().getName()}'s turn`)
+    } else if (gameEnd() && checkDraw()) {
+      console.log("Draw");
+    } else {
+      console.log(`Congratulations ${getActivePlayer().getName()}, you win!`);
+    }
   }
 
+
   const playRound = () => {
-    const [row, column] = prompt("Enter row and column to place your marker:")
+    const [row, column] = prompt(`${getActivePlayer().getName()} enter row and column to place your marker:`)
       .split(" ");
 
     console.log(
-      `Placing ${getActivePlayer().name} marker into row ${row} and column ${column}...`
+      `Placing ${getActivePlayer().getName()} marker into row ${row} and column ${column}...`
     );
     board.setMarks(row, column, getActivePlayer());
 
-    switchPlayerTurn();
     printNewRound();
+
+    if (!gameEnd()) {
+      switchPlayerTurn();
+    }
+
   };
 
-  printNewRound();
 
   const checkRow = () => {
     const [row1X, row2X, row3X] = board.getBoard().map(row => row.every(element => element === "X"));
     const [row1O, row2O,row3O] = board.getBoard().map(row => row.every(element => element === "O"))
     return row1O || row1X || row2O || row2X || row3O || row3X;
   };
+
 
   const checkColumn = () => {
     for (let i = 0; i < 3; i++) {
@@ -82,22 +97,38 @@ function gameController() {
     }
     return false;
   };
+
   
   const checkDiagonal = () => {
-    const newArr = [];
-    newArr.push(board.getBoard()[0][0], board.getBoard()[1][1], board.getBoard()[2][2])
-    if (newArr.every(element => element === "X") || newArr.every(element => element === "O")) {
+    const diaToRightCells = [];
+    diaToRightCells.push(board.getBoard()[0][0], board.getBoard()[1][1], board.getBoard()[2][2])
+    if (diaToRightCells.every(element => element === "X") || diaToRightCells.every(element => element === "O")) {
       return true;
     } 
-    const newArr2 = [];
-    newArr2.push(board.getBoard()[0][2], board.getBoard()[1][1], board.getBoard()[2][0])
-    if (newArr2.every(element => element === "X") || newArr2.every(element => element === "O")) {
+    const diaToLeftCells = [];
+    diaToLeftCells.push(board.getBoard()[0][2], board.getBoard()[1][1], board.getBoard()[2][0])
+    if (diaToLeftCells.every(element => element === "X") || diaToLeftCells.every(element => element === "O")) {
       return true;
     }
     return false;
   };
 
-  const gameEnd = () => checkRow() || checkColumn() || checkDiagonal();
+
+  const checkDraw = () => {
+    let counter = 3;
+    board.getBoard().forEach(row => {
+      const emptyCells = row.filter(element => element === " ");
+      if (emptyCells.length === 0) counter--;
+    });
+
+    if (!counter) return true;
+    return false;
+  };
+
+
+  const gameEnd = () => checkRow() || checkColumn() || checkDiagonal() || checkDraw();
+
+  printNewRound();
   
   while (!gameEnd()) {
     playRound();
