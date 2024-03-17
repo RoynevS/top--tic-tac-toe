@@ -10,7 +10,20 @@
   </head>
   <body>
     <div class="container">
-      <h1>Tic Tac Toe</h1>
+      <dialog class="start-screen">
+        <h1>Welcome to Tic Tac Toe</h1>
+        <form id="start-form">
+          <section class="section-player-1">
+            <label for="player-1">Name</label>
+            <input type="text" name="player-1" id="player-1" placeholder="Player 1">
+          </section>
+          <section class="section-player-2">
+            <label for="player-2">Name</label>
+            <input type="text" name="player-2" id="player-2" placeholder="Player 2">
+          </section>
+        </form>
+        <button class="start-game--btn">Start</button>
+      </dialog>
       <h2 class="active-player"></h2>
       <div class="board"></div>
       <dialog class="end-screen">
