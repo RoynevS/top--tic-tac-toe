@@ -42,9 +42,9 @@ const gameboard = (function() {
   };
 })();
 
-const gameController = (function() {
-  const players = [createPlayer("Player 1", "X", 1), createPlayer("Player 2", "O", 2)];
-
+function gameController(player1name, player2name) {
+  const players = [createPlayer(player1name, "X", 1), createPlayer(player2name, "O", 2)];
+ 
   const board = gameboard;
 
   let activePlayer = players[0];
@@ -140,70 +140,82 @@ const gameController = (function() {
     gameEnd, printWinner, 
     resetBoard: board.resetBoard 
   };
-})();
+}
 
 
 function screenController() {
-  const game = gameController;
   const playerActiveDiv = document.querySelector(".active-player");
   const boardDiv = document.querySelector(".board");
   const endScreenModal = document.querySelector(".end-screen");
   const winnerDiv = document.querySelector(".winner");
   const playAgainBtn = document.querySelector(".play-again--btn");
+  const startScreenModal = document.querySelector(".start-screen");
+  const namePlayer1 = document.querySelector("#player-1");
+  const namePlayer2 = document.querySelector("#player-2");
+  const startBtn = document.querySelector(".start-game--btn");
+  
+  
+  startScreenModal.showModal();
 
-  const updateScreen = () => {
-    boardDiv.textContent = "";
+  startBtn.addEventListener("click", function() {
+    startScreenModal.close();
 
-    const board = game.getBoard();
-    const activePlayer = game.getActivePlayer();
-    console.log(activePlayer.getName())
+    const game = gameController(namePlayer1.value, namePlayer2.value);
 
-    playerActiveDiv.textContent = `${activePlayer.getName()}'s turn...`;
+    const updateScreen = () => {
+      boardDiv.textContent = "";
 
-    let counter = 0;
-    board.forEach(row => {
-      row.forEach((cell, index) => {
-        const cellButton = document.createElement("button");
-        cellButton.classList.add("cell");
-        cellButton.dataset.column = index;
-        cellButton.dataset.row = counter;
-        cellButton.textContent = cell;
-        boardDiv.appendChild(cellButton);
+      const board = game.getBoard();
+      const activePlayer = game.getActivePlayer();
+      console.log(activePlayer.getName())
+
+      playerActiveDiv.textContent = `${activePlayer.getName()}'s turn...`;
+
+      let counter = 0;
+      board.forEach(row => {
+        row.forEach((cell, index) => {
+          const cellButton = document.createElement("button");
+          cellButton.classList.add("cell");
+          cellButton.dataset.column = index;
+          cellButton.dataset.row = counter;
+          cellButton.textContent = cell;
+          boardDiv.appendChild(cellButton);
+        })
+        counter++
       })
-      counter++
+    };
+
+    function clickHandlerBoard(e) {
+      const selectedColumn = e.target.dataset.column;
+      const selectedRow = e.target.dataset.row;
+
+      if (!selectedColumn || !selectedRow) return;
+
+      game.playRound(selectedRow, selectedColumn);
+      if (game.gameEnd()) openEndScreenModal();
+
+      updateScreen();
+    }
+
+
+    const openEndScreenModal = () => {
+      winnerDiv.textContent = game.printWinner();
+      endScreenModal.showModal();
+    };
+    
+    
+    function restartGame() {
+      game.resetBoard();
+      endScreenModal.close();
+      updateScreen();
+    }
+    
+    
+    boardDiv.addEventListener("click", clickHandlerBoard);
+    playAgainBtn.addEventListener("click", restartGame);
+
+    updateScreen();
     })
-  };
-
-  function clickHandlerBoard(e) {
-    const selectedColumn = e.target.dataset.column;
-    const selectedRow = e.target.dataset.row;
-
-    if (!selectedColumn || !selectedRow) return;
-
-    game.playRound(selectedRow, selectedColumn);
-    if (game.gameEnd()) openEndScreenModal();
-
-    updateScreen();
-  }
-
-
-  const openEndScreenModal = () => {
-    winnerDiv.textContent = game.printWinner();
-    endScreenModal.showModal();
-  };
-  
-  
-  function startGame() {
-    game.resetBoard();
-    endScreenModal.close();
-    updateScreen();
-  }
-  
-  
-  boardDiv.addEventListener("click", clickHandlerBoard);
-  playAgainBtn.addEventListener("click", startGame);
-
-  updateScreen();
 }
 
 screenController();
